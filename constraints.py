@@ -280,4 +280,20 @@ class NValuesConstraint(Constraint):
                  a similar approach is applicable here (but of course
                  there are other ways as well)
         '''
-        util.raiseNotDefined()
+        if var not in self.scope():
+            return True   #var=val has support on any constraint it does not participate in
+
+        def valsNotEqualComplete(l):
+            '''tests a list of assignments which are pairs (var,val)
+               to see if they can satisfy the all diff'''
+            vals = [val for val in l if val[1] == self._required]
+            return self._lb <= len(vals) <= self._ub
+
+        def valsNotEqualPartial(l):
+            vals = [val for val in l if val[1] == self._required]
+            return  len(vals) <= self._ub
+
+        varsToAssign = self.scope()
+        varsToAssign.remove(var)
+        x = findvals(varsToAssign, [(var, val)], valsNotEqualComplete, valsNotEqualPartial)
+        return x

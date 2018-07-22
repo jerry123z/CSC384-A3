@@ -149,7 +149,8 @@ def sudokuCSP(initial_sudoku_board, model='neq'):
             if model == 'neq':
                 constraint_list.extend(post_all_pairs(scope))
             elif model == 'alldiff':
-                util.raiseNotDefined()
+                con = AllDiffConstraint("Sudoku_"+ str(i) + "_" + str(j),post_all_pairs(scope))
+                constraint_list.append(con)
 
     vars = [var for row in var_array for var in row]
     return CSP("Sudoku", vars, constraint_list)
@@ -170,18 +171,7 @@ def solve_sudoku(initialBoard, model, algo, allsolns,
         print "Error wrong sudoku model specified {}. Must be one of {}".format(
             model, ['neq', 'alldiff'])
     csp = sudokuCSP(initialBoard, model)
-
-    solutions, num_nodes = bt_search(algo, csp, variableHeuristic, allsolns, trace)
-    print "Explored {} nodes".format(num_nodes)
-    if len(solutions) == 0:
-        print "No solutions to {} found".format(csp.name())
-    else:
-        i = 0
-        for s in solutions:
-            i += 1
-            print "Solution #{}: ".format(i)
-            sudoku_print_soln(s)
-
+    
 def sudoku_print_soln(s):
     '''s is a list of (var,value) pairs. Organize them into
        the right order and then print it in a board layout'''
