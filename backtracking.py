@@ -214,7 +214,18 @@ def GacEnforce(constraints, csp, reasonVar, reasonVal):
     #your implementation for Question 3 goes in this function body
     #you must not change the function parameters
     #ensure that you return one of "OK" or "DWO"
-    util.raiseNotDefined()
+    while constraints:
+        constraint = constraints.pop()   #make constraint GAC
+        for var in constraint.scope():
+            for val in var.curDomain():
+                if constraint.hasSupport(var, val) == False:
+                    var.pruneValue(val, reasonVar, reasonVal)
+                    if var.curDomainSize() == 0:
+                        return "DWO"   #domain wipe out
+                    for recheck in csp.constraintsOf(var):
+                        if recheck != constraint and recheck not in constraints:
+                            constraints.append(recheck)
+    return "OK"
 
 def GAC(unAssignedVars, csp, allSolutions, trace):
     '''GAC search.
@@ -237,4 +248,27 @@ def GAC(unAssignedVars, csp, allSolutions, trace):
     #implementing support for "trace" is optional, but it might
     #help you in debugging
 
-    util.raiseNotDefined()
+    if unAssignedVars.empty():
+        soln = []
+        for var in csp.variables():
+            soln.append((var, var.getValue()))
+        return [soln]
+    solns = []
+    var = unAssignedVars.extract()   #select next variable to assign
+    for val in var.curDomain():   #current domain
+        var.setValue(val)
+        noDWO = True
+        if GacEnforce(csp.constraintsOf(var), csp, var, val) == "DWO":
+            #only var's domain changed-constraints with var have to be checked
+            noDWO = False
+        if noDWO == True:
+            new_solns = GAC(unAssignedVars, csp, allSolutions, trace)
+            if new_solns:
+                solns.extend(new_solns)
+            if len(solns) > 0 and not allSolutions:
+                Variable.restoreValues(var, val)
+                break
+        Variable.restoreValues(var, val)    #restore values pruned by var = val assignment
+    var.unAssign()    #get var to be unassigned and return to list
+    unAssignedVars.insert(var)
+    return solns
