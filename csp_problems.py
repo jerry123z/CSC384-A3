@@ -130,14 +130,16 @@ def sudokuCSP(initial_sudoku_board, model='neq'):
         if model == 'neq':
             constraint_list.extend(post_all_pairs(row))
         elif model == 'alldiff':
-            util.raiseNotDefined()
+            con = AllDiffConstraint("row"+ str(var_array.index(row)),row)
+            constraint_list.append(con)
 
     for colj in range(len(var_array[0])):
         scope = map(lambda row: row[colj], var_array)
         if model == 'neq':
             constraint_list.extend(post_all_pairs(scope))
         elif model == 'alldiff':
-            util.raiseNotDefined()
+            con = AllDiffConstraint("col"+ str(colj),scope)
+            constraint_list.append(con)
 
     for i in [0, 3, 6]:
         for j in [0, 3, 6]:
@@ -149,7 +151,7 @@ def sudokuCSP(initial_sudoku_board, model='neq'):
             if model == 'neq':
                 constraint_list.extend(post_all_pairs(scope))
             elif model == 'alldiff':
-                con = AllDiffConstraint("Sudoku_"+ str(i) + "_" + str(j),post_all_pairs(scope))
+                con = AllDiffConstraint("Sudoku_"+ str(i) + "_" + str(j),scope)
                 constraint_list.append(con)
 
     vars = [var for row in var_array for var in row]
@@ -171,7 +173,7 @@ def solve_sudoku(initialBoard, model, algo, allsolns,
         print "Error wrong sudoku model specified {}. Must be one of {}".format(
             model, ['neq', 'alldiff'])
     csp = sudokuCSP(initialBoard, model)
-    
+
 def sudoku_print_soln(s):
     '''s is a list of (var,value) pairs. Organize them into
        the right order and then print it in a board layout'''
